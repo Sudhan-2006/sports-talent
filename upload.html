@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Video | Sports Talent App</title>
+  <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
+
+</head>
+<body>
+  <div class="navbar">
+  <h1>🏆 Sports Talent App</h1>
+  <div>
+    <a href="index.html">Login</a>
+    <a href="register.html">Register</a>
+    <a href="upload.html">Upload</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="profile.html">Profile</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+</div>
+
+
+  <div class="upload-page">
+    <h2>Upload Your Performance Video</h2>
+    <input type="file" id="videoFile">
+    <input type="text" id="notes" placeholder="Notes (optional)">
+    <button onclick="uploadVideo()">Upload</button>
+  </div>
+
+  <script>
+    async function uploadVideo() {
+      const token = localStorage.getItem('token');
+      if (!token) return alert('Please login first');
+
+      const fileInput = document.getElementById('videoFile');
+      const notes = document.getElementById('notes').value;
+      if (!fileInput.files.length) return alert('Select a file first');
+
+      const form = new FormData();
+      form.append('video', fileInput.files[0]);
+      form.append('notes', notes);
+
+      const res = await fetch('http://localhost:5000/api/upload', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: form
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Upload successful!');
+      } else {
+        alert('Upload failed: ' + JSON.stringify(data));
+      }
+    }
+  </script>
+<script>
+  function logout() {
+    if (confirm('Are you sure you want to log out?')) {
+      localStorage.removeItem('token');
+      alert('You have logged out.');
+      window.location.href = 'index.html';
+    }
+  }
+</script>
+
+</body>
+</html>

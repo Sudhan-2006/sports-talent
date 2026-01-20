@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>30-Day Training Plan — Neon Athlete Theme</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg1:#061226; --bg2:#0f2a44; --neon:#00ffcc; --muted:rgba(255,255,255,0.08);
+      --card: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: "Poppins", Inter, system-ui, sans-serif;
+      background: linear-gradient(120deg,var(--bg1),var(--bg2));
+      color:#e6fff9;
+      -webkit-font-smoothing:antialiased;
+    }
+    .container{max-width:1100px;margin:18px auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    header .brand{display:flex;align-items:center;gap:12px}
+    .banner{height:64px;width:120px;object-fit:cover;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+    header h1{margin:0;font-size:1.25rem;color:var(--neon);letter-spacing:0.4px}
+    .sub{color:rgba(255,255,255,0.7);font-size:0.9rem;margin-top:4px}
+
+    .layout{display:grid;grid-template-columns:1fr 380px;gap:18px;margin-top:18px}
+    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.45)}
+    .big-title{font-weight:700;color:var(--neon);font-size:1.1rem}
+
+    /* progress */
+    .progress-area{display:flex;align-items:center;gap:12px}
+    .progress-wrap{flex:1}
+    .progress-bar{height:14px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden}
+    .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--neon),#00c9b4);transition:width .45s ease}
+    .pct{min-width:72px;text-align:right;font-weight:700;color:#bfffe9}
+
+    /* tasks grid */
+    .tasks-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}
+    .task{
+      background:rgba(255,255,255,0.02);padding:10px;border-radius:10px;min-height:68px;
+      display:flex;flex-direction:column;justify-content:space-between;align-items:center;
+      cursor:pointer;transition:transform .18s,box-shadow .18s,background .18s;
+    }
+    .task:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(0,0,0,0.5)}
+    .task.done{background:linear-gradient(90deg,var(--neon),#00c9b4);color:#052132;box-shadow:0 8px 28px rgba(0,0,0,0.5)}
+    .task .day{font-weight:800}
+    .task .lbl{font-size:0.85rem;color:rgba(255,255,255,0.8)}
+
+    /* calendar */
+    .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:12px}
+    .cal-day{padding:8px;background:rgba(255,255,255,0.02);border-radius:8px;text-align:center;font-weight:700}
+    .cal-day.done{background:var(--neon);color:#052132}
+
+    /* next button (hidden until 100%) */
+    #nextBtn{
+      position:fixed;right:20px;bottom:20px;background:var(--neon);color:#072033;border:none;padding:18px;border-radius:50%;
+      font-size:20px;cursor:pointer;box-shadow:0 12px 32px rgba(0,0,0,0.6);display:none;
+    }
+
+    /* badges */
+    .badges{display:flex;gap:8px;margin-top:12px}
+    .badge{padding:10px;border-radius:10px;background:rgba(255,255,255,0.03);text-align:center;flex:1}
+    .badge.unlock{background:linear-gradient(90deg,var(--neon),#00c9b4);color:#052132;font-weight:800}
+
+    .controls{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .btn{background:var(--neon);color:#052033;border:none;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:700}
+
+    .small{font-size:0.88rem;color:rgba(255,255,255,0.75)}
+    @media(max-width:920px){.layout{grid-template-columns:1fr}.tasks-grid{grid-template-columns:repeat(3,1fr)}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <img src="/mnt/data/A_step-by-step_guide_in_a_digital_graphic_displays.png" alt="banner" class="banner">
+        <div>
+          <h1>Neon Athletics • 30-Day Plan</h1>
+          <div class="sub" id="userName">Welcome, Athlete</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="text-align:right">
+          <div class="small">Selected Sport</div>
+          <div id="sportLabel" style="font-weight:800;color:#bfffe9">Running</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- LEFT: tasks -->
+      <main>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="big-title">Your 30-Day Training</div>
+              <div class="small">Follow daily tasks and complete the plan to unlock video upload.</div>
+            </div>
+            <div style="text-align:right">
+              <div class="small">Progress</div>
+              <div id="daysDoneLabel" style="font-weight:800">0 / 30</div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px" class="progress-area">
+            <div class="progress-wrap">
+              <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+            <div class="pct" id="progressPct">0%</div>
+          </div>
+
+          <div class="tasks-grid" id="tasksGrid" aria-live="polite"></div>
+
+          <div class="controls">
+            <button class="btn" id="saveLocal">Save Locally</button>
+            <button class="btn" id="saveServer">Sync to Server</button>
+            <button class="btn" id="speakBtn">🔊 Read Today's Task</button>
+          </div>
+
+          <div style="margin-top:14px">
+            <div class="small">Calendar</div>
+            <div class="calendar" id="calendarGrid"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="big-title">Notes</div>
+          <p class="small">Complete tasks sequentially. Server-side enforcement prevents skipping days. Your practice clips can be uploaded after completion.</p>
+        </div>
+      </main>
+
+      <!-- RIGHT: graph & badges -->
+      <aside class="card">
+        <div class="big-title">Skill Snapshot</div>
+        <canvas id="skillCanvas" width="360" height="180" style="width:100%;height:160px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent)"></canvas>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <div style="flex:1;text-align:center"><div class="small">Strength</div><div id="valStr" style="font-weight:800">20</div></div>
+          <div style="flex:1;text-align:center"><div class="small">Speed</div><div id="valSpd" style="font-weight:800">20</div></div>
+          <div style="flex:1;text-align:center"><div class="small">Endurance</div><div id="valEnd" style="font-weight:800">20</div></div>
+        </div>
+
+        <div class="badges" id="badges">
+          <div class="badge" id="bronze">Bronze<br><small>10 days</small></div>
+          <div class="badge" id="silver">Silver<br><small>20 days</small></div>
+          <div class="badge" id="gold">Gold<br><small>30 days</small></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <button id="nextBtn" title="Proceed to Upload">↑</button>
+
+<script>
+/*
+  Training page (Neon theme)
+  - Sequential completion enforced: user may only mark the next undone day.
+  - Saves locally (localStorage) and tries to sync to server using JWT if available.
+  - When 30/30 -> next button appears (user clicks to go to upload.html)
+*/
+
+const TOTAL = 30;
+const tasksGrid = document.getElementById('tasksGrid');
+const calendarGrid = document.getElementById('calendarGrid');
+const fillEl = document.getElementById('progressFill');
+const pctEl = document.getElementById('progressPct');
+const daysDoneLabel = document.getElementById('daysDoneLabel');
+const nextBtn = document.getElementById('nextBtn');
+const userNameEl = document.getElementById('userName');
+const sportLabel = document.getElementById('sportLabel');
+
+let selectedSport = localStorage.getItem('selectedSport') || 'Running';
+sportLabel.innerText = selectedSport;
+
+const token = localStorage.getItem('token') || null;
+
+// simple sport-specific task factory (running example, can be customized)
+function taskText(day){
+  if(selectedSport === 'Running'){
+    if(day % 7 === 0) return 'Recovery + Mobility';
+    if(day % 3 === 0) return 'Interval Sprints (6x200m)';
+    if(day % 2 === 0) return 'Tempo Run 25-35 min';
+    return 'Easy Run 20-30 min + Drills';
+  }
+  // fallback generic
+  return 'Daily training and drills';
+}
+
+// build UI
+for(let d=1; d<=TOTAL; d++){
+  const t = document.createElement('div');
+  t.className = 'task';
+  t.dataset.day = d;
+  t.innerHTML = `<div class="day">Day ${d}</div><div class="lbl">${taskText(d)}</div>`;
+  tasksGrid.appendChild(t);
+
+  const c = document.createElement('div');
+  c.className = 'cal-day';
+  c.id = 'cal-'+d;
+  c.innerText = d;
+  calendarGrid.appendChild(c);
+
+  t.addEventListener('click', onTaskClick);
+}
+
+// load profile name
+async function loadProfile(){
+  if(!token) return;
+  try{
+    const res = await fetch('http://localhost:5000/api/profile',{headers:{'Authorization':'Bearer '+token}});
+    if(res.ok){
+      const j = await res.json();
+      userNameEl.innerText = 'Welcome, ' + (j.profile?.name || 'Athlete');
+    }
+  }catch(e){}
+}
+loadProfile();
+
+// load progress: try server first, fallback to localStorage
+async function loadProgress(){
+  let serverProgress = [];
+  if(token){
+    try{
+      const url = `http://localhost:5000/api/training/status?sport=${encodeURIComponent(selectedSport)}`;
+      const res = await fetch(url,{headers:{'Authorization':'Bearer '+token}});
+      if(res.ok){
+        const json = await res.json();
+        if(Array.isArray(json.progress)) serverProgress = json.progress;
+      }
+    }catch(e){ console.log('server status fetch failed'); }
+  }
+
+  if(serverProgress.length){
+    localStorage.setItem(`progress_${selectedSport}`, JSON.stringify(serverProgress));
+    return serverProgress;
+  }
+  // fallback: local
+  const local = JSON.parse(localStorage.getItem(`progress_${selectedSport}`) || '[]');
+  return local;
+}
+
+function saveLocal(progressArr){
+  localStorage.setItem(`progress_${selectedSport}`, JSON.stringify(progressArr));
+}
+
+// when user clicks a day
+async function onTaskClick(e){
+  const wrap = e.currentTarget;
+  const day = Number(wrap.dataset.day);
+
+  const progress = await loadProgress(); // current server/local progress
+  const maxDone = progress.length ? Math.max(...progress) : 0;
+
+  if(progress.includes(day)){
+    // already done - do nothing (or show info)
+    return;
+  }
+
+  // only allow marking next sequential day
+  if(day !== maxDone + 1){
+    alert('Please complete day ' + (maxDone + 1) + ' first.');
+    return;
+  }
+
+  // Ask confirmation
+  const ok = confirm(`Mark Day ${day} as completed?`);
+  if(!ok) return;
+
+  // Try save to server
+  let saved = false;
+  if(token){
+    try{
+      const res = await fetch('http://localhost:5000/api/training/save',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body: JSON.stringify({ sport: selectedSport, day })
+      });
+      const j = await res.json();
+      if(res.ok && Array.isArray(j.progress)){
+        applyProgress(j.progress);
+        saved = true;
+      } else {
+        alert(j.error || 'Server rejected the save.');
+      }
+    }catch(err){
+      console.log('save to server failed', err);
+    }
+  }
+
+  // If no token or server save failed, fall back to local only
+  if(!saved){
+    const local = JSON.parse(localStorage.getItem(`progress_${selectedSport}`) || '[]');
+    if(!local.includes(day)) local.push(day);
+    saveLocal(local);
+    applyProgress(local);
+    alert('Saved locally. Sync to server using "Sync to Server" button later.');
+  }
+
+  // update skill snapshot
+  updateSkillState();
+}
+
+// apply progress array to UI
+function applyProgress(progressArr){
+  // sort unique
+  const p = Array.from(new Set(progressArr)).sort((a,b)=>a-b);
+  // update UI
+  for(let d=1; d<=TOTAL; d++){
+    const el = document.querySelector(`.task[data-day="${d}"]`);
+    const cal = document.getElementById('cal-'+d);
+    if(p.includes(d)){
+      el.classList.add('done');
+      cal.classList.add('done');
+    } else {
+      el.classList.remove('done');
+      cal.classList.remove('done');
+    }
+  }
+  // update progress bar & counts
+  const done = p.length;
+  const pct = Math.round((done / TOTAL) * 100);
+  fillEl.style.width = pct + '%';
+  pctEl.innerText = pct + '%';
+  daysDoneLabel.innerText = `${done} / ${TOTAL}`;
+  // badges
+  if(done >= 10) document.getElementById('bronze').classList.add('unlock'); else document.getElementById('bronze').classList.remove('unlock');
+  if(done >= 20) document.getElementById('silver').classList.add('unlock'); else document.getElementById('silver').classList.remove('unlock');
+  if(done >= 30) {
+    document.getElementById('gold').classList.add('unlock');
+    // show next button
+    nextBtn.style.display = 'block';
+  } else {
+    document.getElementById('gold').classList.remove('unlock');
+    nextBtn.style.display = 'none';
+  }
+}
+
+// sync local progress up to server (attempt)
+async function syncToServer(){
+  if(!token){ alert('Login required to sync to server'); return; }
+  const local = JSON.parse(localStorage.getItem(`progress_${selectedSport}`) || '[]');
+  // send days sequentially (server enforces sequential saving)
+  for(const day of local.sort((a,b)=>a-b)){
+    try{
+      const res = await fetch('http://localhost:5000/api/training/save',{ method:'POST', headers:{ 'Content-Type':'application/json','Authorization':'Bearer '+token }, body: JSON.stringify({ sport:selectedSport, day }) });
+      if(!res.ok){
+        const j = await res.json().catch(()=>({error:'sync failed'}));
+        alert('Sync stopped: ' + (j.error || 'server error')); break;
+      }
+    }catch(err){
+      alert('Sync failed due to network'); break;
+    }
+  }
+  // reload progress from server
+  const updated = await loadProgress();
+  applyProgress(updated);
+  alert('Sync complete.');
+}
+
+// update skill graph (simple math: more days -> better stats)
+function updateSkillState(){
+  const done = JSON.parse(localStorage.getItem(`progress_${selectedSport}`) || '[]').length;
+  const str = Math.min(100, 20 + Math.floor(done * 1.2));
+  const spd = Math.min(100, 16 + Math.floor(done * 1.3));
+  const end = Math.min(100, 24 + Math.floor(done * 1.4));
+  drawSkill(str, spd, end);
+  document.getElementById('valStr').innerText = str;
+  document.getElementById('valSpd').innerText = spd;
+  document.getElementById('valEnd').innerText = end;
+}
+
+// draw a small bar-style skill canvas
+function drawSkill(str, spd, end){
+  const canvas = document.getElementById('skillCanvas');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width = canvas.offsetWidth;
+  const h = canvas.height = 160;
+  ctx.clearRect(0,0,w,h);
+  const baseY = h - 20;
+  const maxH = h - 40;
+  drawBar(ctx, 30, baseY, 60, (str/100)*maxH, '#ffd27a');
+  drawBar(ctx, 140, baseY, 60, (spd/100)*maxH, '#7ad6ff');
+  drawBar(ctx, 250, baseY, 60, (end/100)*maxH, '#b3ffda');
+}
+function drawBar(ctx,x,y,w,h,color){
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x,y-h-6,w,h+6);
+  const g = ctx.createLinearGradient(x,y-h,x+w,y); g.addColorStop(0,color); g.addColorStop(1,'#000000');
+  ctx.fillStyle = g; ctx.fillRect(x,y-h,w,h);
+}
+
+// optional speech for today's task
+function speakToday(){
+  const progress = JSON.parse(localStorage.getItem(`progress_${selectedSport}`) || '[]');
+  const nextDay = (progress.length ? Math.max(...progress) : 0) + 1;
+  const txt = nextDay > TOTAL ? 'All tasks completed' : `Today: Day ${nextDay} — ${taskText(nextDay)}`;
+  if(window.speechSynthesis){ const utt = new SpeechSynthesisUtterance(txt); window.speechSynthesis.cancel(); window.speechSynthesis.speak(utt); }
+}
+
+// helper for task text based on sport
+function taskText(day){
+  if(selectedSport === 'Running'){
+    if(day % 7 === 0) return 'Recovery and mobility';
+    if(day % 3 === 0) return 'Interval sprints';
+    if(day % 2 === 0) return 'Tempo run';
+    return 'Easy run + drills';
+  }
+  return 'Daily sport practice';
+}
+
+// initialize page
+(async function init(){
+  // try load server progress, else local
+  const p = await loadProgress();
+  // ensure localStorage copy exists
+  saveLocal(p);
+  applyProgress(p);
+  updateSkillState();
+})();
+
+// event handlers
+document.getElementById('saveLocal').addEventListener('click', ()=>{
+  const p = JSON.parse(localStorage.getItem(`progress_${selectedSport}`) || '[]');
+  saveLocal(p);
+  alert('Saved locally.');
+});
+document.getElementById('saveServer').addEventListener('click', syncToServer);
+document.getElementById('speakBtn').addEventListener('click', speakToday);
+nextBtn.addEventListener('click', ()=> {
+  // final guard: verify server/local progress is 30
+  const p = JSON.parse(localStorage.getItem(`progress_${selectedSport}`) || '[]');
+  if(p.length >= TOTAL) window.location.href = 'upload.html';
+  else alert('Complete all 30 days to proceed.');
+});
+
+</script>
+</body>
+</html>

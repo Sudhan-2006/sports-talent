@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Sports Talent App</title>
+  <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
+
+</head>
+<body>
+  <div class="navbar">
+    <h1>🏆 Sports Talent App</h1>
+    <div>
+      <a href="index.html">Login</a>
+      <a href="register.html">Register</a>
+      <a href="upload.html">Upload</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="profile.html">Profile</a>
+      <a href="#" onclick="logout()">Logout</a>
+ 
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <a class="link" href="register.html">Don't have an account? Register</a>
+  </div>
+
+  <script>
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const res = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        alert('Login Successful!');
+        window.location.href = 'sports.html';
+
+      } else {
+        alert(data.error || 'Login failed');
+      }
+    }
+  </script>
+<script>
+  function logout() {
+    if (confirm('Are you sure you want to log out?')) {
+      localStorage.removeItem('token');
+      alert('You have logged out.');
+      window.location.href = 'index.html';
+    }
+  }
+</script>
+
+</body>
+</html>

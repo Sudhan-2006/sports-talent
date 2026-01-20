@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Sports Talent App</title>
+  <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
+
+</head>
+<body>
+  <div class="navbar">
+  <h1>🏆 Sports Talent App</h1>
+  <div>
+    <a href="index.html">Login</a>
+    <a href="register.html">Register</a>
+    <a href="upload.html">Upload</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="profile.html">Profile</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+</div>
+
+
+  <div class="dashboard">
+    <h2>My Videos</h2>
+    <table id="videosTable">
+      <tr><th>Filename</th><th>Date</th><th>Status</th></tr>
+    </table>
+  </div>
+
+  <script>
+    async function loadVideos() {
+      const token = localStorage.getItem('token');
+      if (!token) return alert('Please login first');
+
+      const res = await fetch('http://localhost:5000/api/videos', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const table = document.getElementById('videosTable');
+        data.videos.forEach(v => {
+          const row = `<tr>
+            <td>${v.originalname}</td>
+            <td>${v.uploaded_at}</td>
+            <td>${v.status}</td>
+          </tr>`;
+          table.innerHTML += row;
+        });
+      }
+    }
+    loadVideos();
+  </script>
+<script>
+  function logout() {
+    if (confirm('Are you sure you want to log out?')) {
+      localStorage.removeItem('token');
+      alert('You have logged out.');
+      window.location.href = 'index.html';
+    }
+  }
+</script>
+
+</body>
+</html>

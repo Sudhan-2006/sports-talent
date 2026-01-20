@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Eligibility — Sports</title>
+<style>
+  :root{
+    --bg1:#071224; --bg2:#163447; --accent:#00ffcc; --card:rgba(255,255,255,0.04);
+  }
+  body{
+    margin:0; font-family:Inter, Poppins, system-ui, sans-serif;
+    background: linear-gradient(120deg,var(--bg1),var(--bg2));
+    color:#e9fff8;
+  }
+  .wrap{max-width:920px;margin:18px auto;padding:18px}
+  header{display:flex;align-items:center;gap:14px}
+  .banner{width:92px;height:64px;object-fit:cover;border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,0.6)}
+  h1{margin:0;color:var(--accent)}
+  .sub{color:rgba(255,255,255,0.8)}
+  .card{background:var(--card);padding:16px;border-radius:12px;margin-top:14px;box-shadow:0 8px 30px rgba(0,0,0,0.45)}
+  label{display:block;margin-top:10px;font-size:0.95rem;color:#dff}
+  input, select { width:100%; padding:10px; margin-top:8px; border-radius:8px; border:none; font-size:0.95rem; background: rgba(255,255,255,0.02); color:#e9fff8 }
+  .row{display:grid;grid-template-columns:1fr 1fr; gap:10px}
+  .full{grid-column:1/-1}
+  .btn { background:var(--accent); color:#02262a; padding:12px 14px; border-radius:10px; border:none; cursor:pointer; font-weight:700; }
+  .small { font-size:0.92rem; color:rgba(255,255,255,0.8) }
+  #criteriaBox{display:none;margin-top:14px;padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(0,255,204,0.06), rgba(255,255,255,0.02)); border-left:4px solid var(--accent); color:#e7fff8; text-align:left}
+  #nextBtn{display:none;margin-top:14px;padding:12px 16px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#00c9b4);color:#01262a; font-weight:800; cursor:pointer}
+  .req-title{font-weight:800;margin-bottom:8px;color:#dff}
+  ul { margin:8px 0 0 18px; }
+  .hint{font-size:0.9rem;color:#bfffe9;margin-top:8px}
+  @media(max-width:720px){ .row{grid-template-columns:1fr} .banner{width:72px;height:48px} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <!-- use your uploaded banner image path -->
+      <img src="/mnt/data/A_step-by-step_guide_in_a_digital_graphic_displays.png" alt="banner" class="banner">
+      <div>
+        <h1>Sports Eligibility</h1>
+        <div class="sub">Show sport-specific performance requirements for your age group</div>
+      </div>
+    </header>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div>
+          <div class="small">Selected sport</div>
+          <div id="sportLabel" style="font-weight:800;color:var(--accent);font-size:1.05rem">Running</div>
+        </div>
+        <div style="text-align:right">
+          <div class="small">Proceed when done</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="small">Fill basic details below. Age is calculated from DOB if provided — you may fine-tune the age input after selecting DOB.</div>
+
+      <div style="margin-top:12px" class="card" id="formCard">
+        <div class="row">
+          <div>
+            <label for="fullName">Full name</label>
+            <input id="fullName" placeholder="Your full name" />
+          </div>
+
+          <div>
+            <label for="dob">Date of birth</label>
+            <input id="dob" type="date" />
+          </div>
+
+          <div>
+            <label for="age">Age (years)</label>
+            <input id="age" type="number" min="5" placeholder="Auto-calculated from DOB or edit" />
+          </div>
+
+          <div>
+            <label for="gender">Gender</label>
+            <select id="gender">
+              <option value="">Select gender</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="region">Region</label>
+            <input id="region" placeholder="State / Region" />
+          </div>
+
+          <div class="full">
+            <label for="city">City</label>
+            <input id="city" placeholder="City" />
+          </div>
+
+          <div>
+            <label for="height">Height (cm)</label>
+            <input id="height" type="number" />
+          </div>
+
+          <div>
+            <label for="weight">Weight (kg)</label>
+            <input id="weight" type="number" />
+          </div>
+
+          <div class="full">
+            <label for="aadhar">Aadhaar number</label>
+            <input id="aadhar" placeholder="12 digit Aadhaar" maxlength="12" />
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" id="showBtn">Show Eligibility Criteria</button>
+          <button class="btn" id="saveBtn" style="background:transparent;border:2px solid rgba(255,255,255,0.06);color:#dff">Save Details</button>
+        </div>
+
+        <div class="hint">Note: We only display the performance requirements for the sport and age group. This page does not say "eligible" or "not eligible".</div>
+      </div>
+
+      <div id="criteriaBox">
+        <div class="req-title" id="criteriaTitle">Requirements</div>
+        <div id="criteriaContent"></div>
+      </div>
+
+      <button id="nextBtn">Continue → Training Plan</button>
+    </div>
+  </div>
+
+<script>
+/* -------------------------
+   Data: performance requirements by sport and age bracket
+   Age brackets: 12-15, 16-20, 21-25, 26-34, 35-40, 41+
+------------------------- */
+const REQUIREMENTS = {
+  "Running": {
+    "12-15": "Complete 100m under 16 seconds.",
+    "16-20": "Complete 100m under 14 seconds.",
+    "21-25": "Complete 100m under 13 seconds.",
+    "26-34": "Complete 100m under 14 seconds.",
+    "35-40": "Complete 100m under 16 seconds.",
+    "41+": "Focus on fitness — complete 100m under 18 seconds (target)."
+  },
+
+  "Long Jump": {
+    "12-15": "Minimum long jump distance: 2.8 meters.",
+    "16-20": "Minimum long jump distance: 3.6 meters.",
+    "21-25": "Minimum long jump distance: 4.2 meters.",
+    "26-34": "Minimum long jump distance: 3.8 meters.",
+    "35-40": "Minimum long jump distance: 3.2 meters.",
+    "41+": "Focus on technique and mobility; target 2.5+ meters."
+  },
+
+  "High Jump": {
+    "12-15": "Clear at least 1.00 meter.",
+    "16-20": "Clear at least 1.20 meters.",
+    "21-25": "Clear at least 1.35 meters.",
+    "26-34": "Clear around 1.25 meters.",
+    "35-40": "Clear around 1.10 meters.",
+    "41+": "Focus on controlled technique; target 0.95+ meters."
+  },
+
+  "Javelin Throw": {
+    "12-15": "Target throw distance: ~18 meters.",
+    "16-20": "Target throw distance: ~28 meters.",
+    "21-25": "Target throw distance: ~35 meters.",
+    "26-34": "Target throw distance: ~30 meters.",
+    "35-40": "Target throw distance: ~24 meters.",
+    "41+": "Technique-focused training; target ~18+ meters."
+  },
+
+  "Shot Put": {
+    "12-15": "Target put distance: 6+ meters (4kg shot).",
+    "16-20": "Target put distance: 8+ meters.",
+    "21-25": "Target put distance: 10+ meters.",
+    "26-34": "Target put distance: ~9 meters.",
+    "35-40": "Target put distance: ~7-8 meters.",
+    "41+": "Technique & controlled strength; target 6+ meters."
+  },
+
+  "Swimming": {
+    "12-15": "50m freestyle under ~45 seconds.",
+    "16-20": "50m freestyle under ~36 seconds.",
+    "21-25": "50m freestyle under ~30 seconds.",
+    "26-34": "50m freestyle under ~34 seconds.",
+    "35-40": "50m freestyle under ~40 seconds.",
+    "41+": "Focus on fitness & breathing; 50m target under ~50 seconds."
+  },
+
+  "Relay Race": {
+    "12-15": "Individual 100m split under ~18 seconds (team event).",
+    "16-20": "Individual 100m split under ~16 seconds.",
+    "21-25": "Individual 100m split under ~14.5 seconds.",
+    "26-34": "Individual split target ~15.5 seconds.",
+    "35-40": "Individual split target ~17.5 seconds.",
+    "41+": "Team coordination & fitness focus; split target ~20s."
+  }
+};
+
+/* -------------------------
+   Helpers: age group detection
+------------------------- */
+function ageToBracket(age){
+  if (age >=12 && age <= 15) return "12-15";
+  if (age >=16 && age <= 20) return "16-20";
+  if (age >=21 && age <= 25) return "21-25";
+  if (age >=26 && age <= 34) return "26-34";
+  if (age >=35 && age <= 40) return "35-40";
+  return "41+";
+}
+
+/* -------------------------
+   Page wiring
+------------------------- */
+const sportLabelEl = document.getElementById('sportLabel');
+const sport = localStorage.getItem('selectedSport') || 'Running';
+sportLabelEl.innerText = sport;
+
+const fullNameEl = document.getElementById('fullName');
+const dobEl = document.getElementById('dob');
+const ageEl = document.getElementById('age');
+const genderEl = document.getElementById('gender');
+const regionEl = document.getElementById('region');
+const cityEl = document.getElementById('city');
+const heightEl = document.getElementById('height');
+const weightEl = document.getElementById('weight');
+const aadharEl = document.getElementById('aadhar');
+
+const showBtn = document.getElementById('showBtn');
+const saveBtn = document.getElementById('saveBtn');
+const criteriaBox = document.getElementById('criteriaBox');
+const criteriaTitle = document.getElementById('criteriaTitle');
+const criteriaContent = document.getElementById('criteriaContent');
+const nextBtn = document.getElementById('nextBtn');
+
+/* auto-calc age from DOB */
+dobEl.addEventListener('change', ()=>{
+  const dob = dobEl.value;
+  if(!dob) return;
+  const age = calcAgeFromDOB(dob);
+  if(age && !isNaN(age)){
+    ageEl.value = age;
+  }
+});
+
+function calcAgeFromDOB(dobStr){
+  const dob = new Date(dobStr);
+  if(isNaN(dob)) return null;
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+}
+
+/* show criteria action */
+showBtn.addEventListener('click', ()=>{
+  const name = (fullNameEl.value || '').trim();
+  const ageVal = Number(ageEl.value);
+  const gender = genderEl.value || '';
+  const region = regionEl.value || '';
+  const city = cityEl.value || '';
+  const dob = dobEl.value || '';
+  const height = heightEl.value || '';
+  const weight = weightEl.value || '';
+  const aadhar = aadharEl.value || '';
+
+  if(!name){
+    alert('Please enter full name.');
+    return;
+  }
+  if(!ageVal || ageVal < 5){
+    alert('Please enter a valid age (or set your DOB).');
+    return;
+  }
+
+  // choose bracket
+  const bracket = ageToBracket(ageVal);
+
+  // fetch req text
+  const sportReqs = REQUIREMENTS[sport] || null;
+  let reqText = 'No requirements available for this sport.';
+  if(sportReqs && sportReqs[bracket]){
+    reqText = sportReqs[bracket];
+  } else if(sportReqs){
+    // fallback: try nearest bracket
+    reqText = sportReqs['21-25'] || Object.values(sportReqs)[0];
+  }
+
+  // build display
+  criteriaTitle.innerText = `${sport} — Requirements for age ${bracket}`;
+  criteriaContent.innerHTML = `
+    <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+    <p><strong>DOB:</strong> ${dob ? escapeHtml(dob) : '—' } &nbsp; <strong>Age:</strong> ${ageVal}</p>
+    <p><strong>Gender:</strong> ${escapeHtml(gender)} &nbsp; <strong>Region:</strong> ${escapeHtml(region)} &nbsp; <strong>City:</strong> ${escapeHtml(city)}</p>
+    <p><strong>Height:</strong> ${height ? escapeHtml(height)+' cm' : '—'} &nbsp; <strong>Weight:</strong> ${weight ? escapeHtml(weight)+' kg' : '—'}</p>
+    <hr style="opacity:0.12" />
+    <div style="font-weight:800;margin-bottom:6px">Performance requirement</div>
+    <div style="background:rgba(255,255,255,0.02);padding:10px;border-radius:8px">${escapeHtml(reqText)}</div>
+    <div style="margin-top:10px;color:rgba(255,255,255,0.8)">Note: These are target performance requirements for training & selection. Proceed to training plan when ready.</div>
+  `;
+
+  // show box & next
+  criteriaBox.style.display = 'block';
+  nextBtn.style.display = 'inline-block';
+
+  // Save details to localStorage for profile & later pages
+  const userDetails = { name, dob, age: ageVal, gender, region, city, height, weight, aadhar, sport, bracket, requirement: reqText, savedAt: new Date().toISOString() };
+  localStorage.setItem('userEligibilityDetails', JSON.stringify(userDetails));
+});
+
+/* Save details independently */
+saveBtn.addEventListener('click', ()=>{
+  const name = (fullNameEl.value || '').trim();
+  const ageVal = Number(ageEl.value);
+  const gender = genderEl.value || '';
+  const region = regionEl.value || '';
+  const city = cityEl.value || '';
+  const dob = dobEl.value || '';
+  const height = heightEl.value || '';
+  const weight = weightEl.value || '';
+  const aadhar = aadharEl.value || '';
+
+  if(!name){ alert('Please enter name before saving'); return; }
+  const userDetails = { name, dob, age: ageVal || null, gender, region, city, height, weight, aadhar, sport, savedAt: new Date().toISOString() };
+  localStorage.setItem('userEligibilityDetails', JSON.stringify(userDetails));
+  alert('Details saved locally.');
+});
+
+/* Next to training plan */
+nextBtn.addEventListener('click', ()=>{
+  // you asked only to show criteria — no eligibility text — so we always allow next
+  // but ensure user details exist
+  const d = JSON.parse(localStorage.getItem('userEligibilityDetails') || 'null');
+  if(!d){ alert('Please save/view your details first'); return; }
+  window.location.href = 'training-plan.html';
+});
+
+/* small helper to escape HTML */
+function escapeHtml(s){
+  if(!s && s !== 0) return '';
+  return String(s).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
+}
+
+/* Pre-fill if saved earlier */
+(function prefill(){
+  const saved = JSON.parse(localStorage.getItem('userEligibilityDetails') || 'null');
+  if(saved){
+    fullNameEl.value = saved.name || '';
+    dobEl.value = saved.dob || '';
+    ageEl.value = saved.age || '';
+    genderEl.value = saved.gender || '';
+    regionEl.value = saved.region || '';
+    cityEl.value = saved.city || '';
+    heightEl.value = saved.height || '';
+    weightEl.value = saved.weight || '';
+    aadharEl.value = saved.aadhar || '';
+  }
+})();
+</script>
+</body>
+</html>

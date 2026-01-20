@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile | Sports Talent App</title>
+  <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
+
+</head>
+<body>
+  <div class="navbar">
+  <h1>🏆 Sports Talent App</h1>
+  <div>
+    <a href="index.html">Login</a>
+    <a href="register.html">Register</a>
+    <a href="upload.html">Upload</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="profile.html">Profile</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+</div>
+
+  <div class="container">
+    <h2>My Profile</h2>
+    <p id="info"></p>
+  </div>
+
+  <script>
+    async function loadProfile() {
+      const token = localStorage.getItem('token');
+      if (!token) return alert('Please login first');
+
+      const res = await fetch('http://localhost:5000/api/profile', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('info').innerHTML = `
+          <strong>Name:</strong> ${data.profile.name}<br>
+          <strong>Email:</strong> ${data.profile.email}<br>
+          <strong>Role:</strong> ${data.profile.role}<br>
+          <strong>Joined:</strong> ${data.profile.created_at}
+        `;
+      }
+    }
+    loadProfile();
+  </script>
+<script>
+  function logout() {
+    if (confirm('Are you sure you want to log out?')) {
+      localStorage.removeItem('token');
+      alert('You have logged out.');
+      window.location.href = 'index.html';
+    }
+  }
+</script>
+
+</body>
+</html>
